@@ -2,19 +2,22 @@ import cv2
 import numpy as np
 
 # Load the Tiny YOLOv3 model
-net = cv2.dnn.readNet("tiny_yolo\\yolov2-tiny.weights", "tiny_yolo\\yolov2-tiny.cfg")
+net = cv2.dnn.readNet("./tiny_yolo/yolov2-tiny.weights", "./tiny_yolo/yolov2-tiny.cfg")
 
 # Load the classes file
-with open("tiny_yolo\\coco.names", "r") as f:
+with open("./tiny_yolo/coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
 
 # this is the focal length of the camera for pi camera v1 in pixels
-FOCAL_LENGTH = 2571.4 # 2714.3
+FOCAL_LENGTH = 500 # 2714.3  2571.4  # calculated 500
 
 # this is the height of the object in cm
 OBJECT_HEIGHT = 7
 
-def detect_objects(image, result_image=False):
+# distance from camera to object in cm
+DISTANCE = 30
+
+def detect_objects(image, result_image=False, calibrate=False):
     """Detect objects in an image using the Tiny YOLOv3 model.	
         Args:
             image: The image to detect objects in. This is a numpy array.
@@ -36,7 +39,7 @@ def detect_objects(image, result_image=False):
 
     # Get the output layer names
     layer_names = net.getLayerNames()
-    output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
+    output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
     # Forward pass the image through the network
     outputs = net.forward(output_layers)
@@ -78,14 +81,18 @@ def detect_objects(image, result_image=False):
             confidence = confidences[i]
             
             # Calculate the distance to the object
-            distance = (OBJECT_HEIGHT * FOCAL_LENGTH) / h        
-
-            detected_objects.append({"label": label, "box": boxes[i], "distance": distance})
+            distance = (OBJECT_HEIGHT * FOCAL_LENGTH) / h
+            
+            if calibrate:
+                focal_length = (h * DISTANCE) / OBJECT_HEIGHT
+                detected_objects.append({"label": label, "box": boxes[i], "distance": distance, "focal_length": focal_length})
+            else:
+                detected_objects.append({"label": label, "box": boxes[i], "distance": distance})
             
             if result_image:
                 color = (255, 0, 0)
                 cv2.rectangle(image, (x, y), (x+w, y+h), color, 2)
-                cv2.putText(image, f"{label} {confidence:.2f} {distance:.2f}m", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)    
+                # cv2.putText(image, f"{label} {confidence:.2f} {distance:.2f}m", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)    
     
     # display the image until any key is pressed
     if result_image:
