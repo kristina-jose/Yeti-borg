@@ -167,8 +167,7 @@ def get_object(mock=False):
     # result = detect_objects(frame, result_image=True, calibrate=True)
     print("started")
     result = yolo_client.main(image=frame)
-    print("ended")
-    
+    print("ended")   
     return result
 
 def move_around():
@@ -186,19 +185,6 @@ def move_around():
     time.sleep(1)
     PerformSpin(90)
     time.sleep(1)
-
-    """
-    distance = []
-    color m= [
-    box = []
-    target = 0
-    distance.append(objects.get("distance"))
-    color.append(objects.get("colour"))
-    if objects.get("distance") < short_dis:
-        box = objects.get("box")
-        short_dis = objects.get("distance")
-     distance = (distance / 100)
-    """
 
 def looking_for_object():
     object1 = get_object(mock=False) #object1 will give a dictionary with the distance
@@ -221,7 +207,6 @@ def find_cup(color):
         else:
             trying_to_find_last_cup(color)
 
-
 def trying_to_find_last_cup(color):
     x = 0
     for i in range(1, 100):
@@ -236,9 +221,6 @@ def trying_to_find_last_cup(color):
             
         else:
             x = 25*i
-
-
-
 
 def correct_angle(target, x, width, color):
     while True:
@@ -265,8 +247,6 @@ def correct_angle(target, x, width, color):
                 PerformSpin(-90)
             target, x, width = find_cup(color)
     
-    
-
 def final_project():
     colors = ["BLUE", "GREEN", "RED"]
     for color in colors:
@@ -276,30 +256,21 @@ def final_project():
         time.sleep(1)
         PerformSpin(180)
 
-
-
-
 def calibrating():
     global timeSpin360_left
     global timeSpin360_right
     test_length = float(input("Enter angle it calibrate for the left side "))
     PerformSpin(test_length)
-
         
     move_length = float(input("Enter angle robit moved for the left side "))
-
-
     if test_length != move_length:
         timeSpin360_left = (test_length/move_length)*timeSpin360_left
         print(timeSpin360_left)
 
     test_length = float(input("Enter angle it calibrate for the right side "))
     PerformSpin(test_length)
-
         
     move_length = float(input("Enter angle robit moved for the right side "))
-
-
     if test_length != move_length:
         timeSpin360_right = (test_length/move_length)*timeSpin360_right
         print(timeSpin360_right)
@@ -309,39 +280,27 @@ def calibrating_meters():
     global timeForward1m
     test_length = float(input("Enter the distance you want to move "))
     PerformDrive(test_length)
-
-        
+    
     move_length = float(input("Actually distance you moved "))
-
-
     if test_length != move_length:
         timeForward1m = (test_length/move_length)*timeForward1m
         print(timeForward1m)
 
 
 if __name__ == '__main__':
-
     done = False
 
     while not done:
         option = int(input("Press a number "))
         if option == 0:
             "calibrating"
-            calibrating()
-            
-            
+            calibrating()            
         elif option == 1:
             "movement"               
             calibrating_meters()
-
-
         elif option == 2:
             "Challange final project"
             final_project()
-
-
-        
-
         else:
             done = True
         
