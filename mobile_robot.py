@@ -213,8 +213,41 @@ def correct_angle():
         PerformSpin(10)
         correct_angle() 
 
-def challange3():
+def calibrating():
+    global timeSpin360
+    test_length = float(input("Enter angle it calibrate in meters "))
+    PerformSpin(test_length)
+    
+    move_length = float(input("Enter angle robit moved in meters "))
+    if test_length != move_length:
+        timeSpin360 = (test_length/move_length)*timeSpin360
 
+def challange1():
+    distance = []
+    target = 0
+    object1 = get_object(mock=False) #object1 will give a dictionary with the distance
+    print(object1)
+    for objects in object1:
+        distance.append(objects.get("distance"))         
+        target = min(distance)
+    target = (target / 100) - 0.05 
+    PerformDrive(target)    
+
+def challange2():
+    distance = []
+    target = 0
+    object1 = get_object(mock=False) #object1 will give a dictionary with the distance
+    print(object1)
+    for objects in object1:
+        distance.append(objects.get("distance"))         
+        target = min(distance)
+    target = (target / 100) - 0.10 
+    PerformDrive(target)
+    move_around()
+    target2 = 2 - target - 0.4
+    PerformDrive(target2)
+    
+def challange3():
     target, box = looking_for_object()       
     if target > 2.5:
         PerformSpin(45)
@@ -233,18 +266,8 @@ def challange3():
     else:
         correct_angle()
 
-def calibrating():
-    global timeSpin360
-    test_length = float(input("Enter angle it calibrate in meters "))
-    PerformSpin(test_length)
-    
-    move_length = float(input("Enter angle robit moved in meters "))
-    if test_length != move_length:
-        timeSpin360 = (test_length/move_length)*timeSpin360
-
-
-
-
+        
+        
 if __name__ == '__main__':
 
     done = False
@@ -254,36 +277,13 @@ if __name__ == '__main__':
         if option == 0:
             "calibrating"
             calibrating()
-            
-            
-
         elif option == 1:
             "Challange 1"
-            distance = []
-            target = 0
-            object1 = get_object(mock=False) #object1 will give a dictionary with the distance
-            print(object1)
-            for objects in object1:
-                distance.append(objects.get("distance"))         
-                target = min(distance)
-            target = (target / 100) - 0.05 
-            PerformDrive(target)
+            challange1()
 
         elif option == 2:
             "Challange 2"
-            distance = []
-            target = 0
-            object1 = get_object(mock=False) #object1 will give a dictionary with the distance
-            print(object1)
-            for objects in object1:
-                distance.append(objects.get("distance"))         
-                target = min(distance)
-            target = (target / 100) - 0.10 
-            PerformDrive(target)
-            move_around()
-            target2 = 2 - target - 0.4
-            PerformDrive(target2)
-
+            challange2()
 
         elif option == 3:
             "Challange 3"               
