@@ -68,8 +68,10 @@ ZB.SetCommsFailsafe(False)              # Disable the communications failsafe
 ZB.ResetEpo()
 
 # Movement settings (worked out from our YetiBorg v2 on a smooth surface)
-timeForward1m = 2.3                     # Number of seconds needed to move about 1 meter
-timeSpin360   = 2.245                     # Number of seconds needed to make a full left / right spin
+timeForward1m = 2.264260905861877                   # Number of seconds needed to move about 1 meter
+timeBackward1m = 3.4834783167105794
+timeSpin360_left = 1.8037625234370742                     # Number of seconds needed to make a full left / right spin
+timeSpin360_right = 1.8438461350690094                     # Number of seconds needed to make a full left / right spin
 #timeSpin360 = global(timeSpin360)
 testMode = False                        # True to run the motion tests, False to run the normal sequence
 
@@ -101,13 +103,15 @@ def PerformSpin(angle):
         # Left turn
         driveLeft  = -1.0
         driveRight = +1.0
-        angle *= -1
+        # Calculate the required time delay
+        numSeconds = (-angle / 360.0) * timeSpin360_left
     else:
         # Right turn
         driveLeft  = +1.0
         driveRight = -1.0
-    # Calculate the required time delay
-    numSeconds = (angle / 360.0) * timeSpin360
+        # Calculate the required time delay
+        numSeconds = (angle / 360.0) * timeSpin360_right
+
     # Perform the motion
     PerformMove(driveLeft, driveRight, numSeconds)
 
@@ -118,12 +122,14 @@ def PerformDrive(meters):
         driveLeft  = -1.0
         driveRight = -1.0
         meters *= -1
+        numSeconds = meters * timeBackward1m
     else:
         # Forward drive
         driveLeft  = +1.0
-        driveRight = +1.0
+        driveRight = +0.980
+        numSeconds = meters * timeForward1m
     # Calculate the required time delay
-    numSeconds = meters * timeForward1m
+    #numSeconds = meters * timeForward1m
     # Perform the motion
     PerformMove(driveLeft, driveRight, numSeconds)
 
@@ -159,9 +165,10 @@ def get_object(mock=False):
     frame = cv2.rotate(frame, cv2.ROTATE_180)
     cv2.imwrite("camera_test.jpg", frame)
     # result = detect_objects(frame, result_image=True, calibrate=True)
+    print("started")
     result = yolo_client.main(image=frame)
+    print("ended")
     
-
     return result
 
 def move_around():
@@ -180,75 +187,136 @@ def move_around():
     PerformSpin(90)
     time.sleep(1)
 
-def looking_for_object():
+    """
     distance = []
+    color m= [
     box = []
     target = 0
+    distance.append(objects.get("distance"))
+    color.append(objects.get("colour"))
+    if objects.get("distance") < short_dis:
+        box = objects.get("box")
+        short_dis = objects.get("distance")
+     distance = (distance / 100)
+    """
+
+def looking_for_object():
     object1 = get_object(mock=False) #object1 will give a dictionary with the distance
     print(object1)
-    short_dis = 300
-    for objects in object1:
-        distance.append(objects.get("distance"))
-        if objects.get("distance") < short_dis:
-            box = objects.get("box")
-            short_dis = objects.get("distance")
-            
-    short_dis = (short_dis / 100)
-    return short_dis, box
+    return object1
 
-def correct_angle():
-    target, box = looking_for_object()
-    target += 0.10
-    if len(box):
-        x, y, width, height = box[0], box[1], box[2], box[3]
-    else:
-        challange3()
-        return
-    frame_width = 640
-    middle = x + (width / 2)
-    if 250 < middle < 390:
-        PerformDrive(target)
-    elif middle < 290:
-        PerformSpin(-10)
-        correct_angle()
-    else:
-        PerformSpin(10)
-        correct_angle()
+def find_cup(color):
+    while True:
+        target = 0
+        objects = looking_for_object()
+        if len(objects):
+            for obj in objects:
+                if obj.get("color") == color:
+                    box = obj.get("box")
+                    target = (obj.get("distance") / 100)
+                    x, y, width, height = box[0], box[1], box[2], box[3]
+                    return target, x, width
+                else:
+                    trying_to_find_last_cup(color)
+        else:
+            trying_to_find_last_cup(color)
+
+
+def trying_to_find_last_cup(color):
+    x = 0
+    for i in range(1, 100):
+        PerformSpin(x)
+        objects = looking_for_object()
+        for obj in objects:
+            if obj.get("color") == color:
+                return 
+        
+        if x > 0:
+            x = -(25*i)
+            
+        else:
+            x = 25*i
+
+
+
+
+def correct_angle(target, x, width, color):
+    while True:
+        if target < 0.5:
+            target += 1.5
+            PerformDrive(target)
+        else:
+            middle = x + (width / 2)
+            if 290 < middle < 350:
+                target += 1.5
+                PerformDrive(target)
+                return
+            elif middle < 290:
+                PerformSpin(-90)
+                time.sleep(1)
+                PerformDrive(0.03)
+                time.sleep(1)
+                PerformSpin(90)
+            else:
+                PerformSpin(90)
+                time.sleep(1)
+                PerformDrive(0.03)
+                time.sleep(1)
+                PerformSpin(-90)
+            target, x, width = find_cup(color)
+    
     
 
-def challange3():
+def final_project():
+    colors = ["BLUE", "GREEN", "RED"]
+    for color in colors:
+        target, x, width = find_cup(color)
+        correct_angle(target, x, width, color)
+        PerformDrive(-0.2)
+        time.sleep(1)
+        PerformSpin(180)
 
-    target, box = looking_for_object()       
-    if target > 2.5:
-        PerformSpin(45)
-        target, box = looking_for_object()
-        if target > 2.5:
-            PerformSpin(45)
-            target, box = looking_for_object()
-            if target > 2.5:
-                PerformSpin(-90)
-                PerformDrive(0.20) 
-                challange3()
-            else:
-                correct_angle()  
-        else:
-            correct_angle()
-    else:
-        correct_angle()
+
+
 
 def calibrating():
-    global timeSpin360
-    test_length = float(input("Enter angle it calibrate in meters "))
+    global timeSpin360_left
+    global timeSpin360_right
+    test_length = float(input("Enter angle it calibrate for the left side "))
     PerformSpin(test_length)
 
         
-    move_length = float(input("Enter angle robit moved in meters "))
+    move_length = float(input("Enter angle robit moved for the left side "))
 
 
     if test_length != move_length:
-        timeSpin360 = (test_length/move_length)*timeSpin360
+        timeSpin360_left = (test_length/move_length)*timeSpin360_left
+        print(timeSpin360_left)
+
+    test_length = float(input("Enter angle it calibrate for the right side "))
+    PerformSpin(test_length)
+
+        
+    move_length = float(input("Enter angle robit moved for the right side "))
 
 
+    if test_length != move_length:
+        timeSpin360_right = (test_length/move_length)*timeSpin360_right
+        print(timeSpin360_right)
+
+
+def calibrating_meters():
+    global timeForward1m
+    test_length = float(input("Enter the distance you want to move "))
+    PerformDrive(test_length)
+
+        
+    move_length = float(input("Actually distance you moved "))
+
+
+    if test_length != move_length:
+        timeForward1m = (test_length/move_length)*timeForward1m
+        print(timeForward1m)
 
 
 if __name__ == '__main__':
@@ -262,38 +330,17 @@ if __name__ == '__main__':
             calibrating()
             
             
-
         elif option == 1:
-            "Challange 1"
-            distance = []
-            target = 0
-            object1 = get_object(mock=False) #object1 will give a dictionary with the distance
-            print(object1)
-            for objects in object1:
-                distance.append(objects.get("distance"))         
-                target = min(distance)
-            target = (target / 100) - 0.05 
-            PerformDrive(target)
+            "movement"               
+            calibrating_meters()
+
 
         elif option == 2:
-            "Challange 2"
-            distance = []
-            target = 0
-            object1 = get_object(mock=False) #object1 will give a dictionary with the distance
-            print(object1)
-            for objects in object1:
-                distance.append(objects.get("distance"))         
-                target = min(distance)
-            target = (target / 100) - 0.10 
-            PerformDrive(target)
-            move_around()
-            target2 = 2 - target - 0.4
-            PerformDrive(target2)
+            "Challange final project"
+            final_project()
 
 
-        elif option == 3:
-            "Challange 3"               
-            challange3()
+        
 
         else:
             done = True
