@@ -160,8 +160,6 @@ def get_object(mock=False):
     cv2.imwrite("camera_test.jpg", frame)
     # result = detect_objects(frame, result_image=True, calibrate=True)
     result = yolo_client.main(image=frame)
-    
-
     return result
 
 def move_around():
@@ -213,8 +211,7 @@ def correct_angle():
         correct_angle()
     else:
         PerformSpin(10)
-        correct_angle()
-    
+        correct_angle() 
 
 def challange3():
 
@@ -240,11 +237,8 @@ def calibrating():
     global timeSpin360
     test_length = float(input("Enter angle it calibrate in meters "))
     PerformSpin(test_length)
-
-        
+    
     move_length = float(input("Enter angle robit moved in meters "))
-
-
     if test_length != move_length:
         timeSpin360 = (test_length/move_length)*timeSpin360
 
