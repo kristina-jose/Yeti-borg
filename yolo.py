@@ -28,6 +28,8 @@ def detect_objects(image, result_image=False, calibrate=False):
             box: The bounding box of the object.
             distance: The distance to the object in cm.
     """
+    global net
+    global classes
     # # Load the image
     # image = cv2.imread("test_image\\2.jpg")
     
@@ -45,7 +47,7 @@ def detect_objects(image, result_image=False, calibrate=False):
     outputs = net.forward(output_layers)
 
     # Find the detected objects
-    conf_threshold = 0.5
+    conf_threshold = 0.0001
     nms_threshold = 0.4
     boxes = []
     confidences = []
@@ -62,6 +64,7 @@ def detect_objects(image, result_image=False, calibrate=False):
                 center_y = int(detection[1] * image.shape[0])
                 w = int(detection[2] * image.shape[1])
                 h = int(detection[3] * image.shape[0])
+                # we div by 2 to get the top left corner of the bounding box
                 x = center_x - w // 2
                 y = center_y - h // 2
 
@@ -70,13 +73,30 @@ def detect_objects(image, result_image=False, calibrate=False):
                 class_ids.append(class_id)
 
     # Apply non-maximum suppression to remove overlapping boxes
+    print("#"*50)
+    print(boxes)
+    print("#"*50)
     indices = cv2.dnn.NMSBoxes(boxes, confidences, conf_threshold, nms_threshold)
 
     detected_objects = []
     
     if len(indices) > 0:
         for i in indices.flatten():
-            x, y, w, h = boxes[i]
+            # if crop then convert the box coordinates to the original image coordinates
+            print("\n","box")
+            print(boxes[i])
+            if crop:
+                # cropped image size 200x200
+                original_height, original_width, _ = original_image.shape
+                print("crop ")
+                print(x, coords[0], y, coords[1], "\n")
+                x = coords[0] + x
+                y = coords[1] + y
+                _, _, w, h = boxes[i]
+            else:
+                x, y, w, h = boxes[i]
+                
+            
             label = str(classes[class_ids[i]])
             confidence = confidences[i]
             
@@ -99,3 +119,84 @@ def detect_objects(image, result_image=False, calibrate=False):
         cv2.imwrite("yolo_result.jpg", image)
 
     return detected_objects
+
+
+def crop_image(image):
+    # create multiple images from the original image using a sliding window
+    crop_percentage = 0.3
+    crop_height = int(image.shape[0] * crop_percentage)
+    crop_width = int(image.shape[1] * crop_percentage)
+    
+    crop_height, crop_width = 200, 200
+    
+    images = []
+    coords = []
+    height, width, _ = image.shape
+    step_size = 200
+    window_size = 200
+    for y in range(0, height, crop_height):
+        for x in range(0, width, crop_width):
+            # if width is less than window size skip
+            if width < x + crop_width and height < y + crop_height:
+                continue
+            images.append(image[y:y+window_size, x:x+window_size])
+            coords.append((x, y))
+
+    return images, coords
+
+def remove_classes(objects):
+    remove_list = ["person", "chair", "sofa", "diningtable"]
+    
+    objects = [obj for obj in objects if obj["label"] not in remove_list]
+    
+    return objects
+    
+    
+def keep_classes(objects):
+    keep = ["cup"]
+    objects = [obj for obj in objects if obj["label"] in keep]
+    return objects
+    
+    
+def add_image_shape(results, image):
+    results = results.copy()
+    for result in results:
+        result.update({"shape" : image.shape})
+        
+    # results = [result.update({"shape" : image.shape}) for result in results]
+    return results
+
+def main(image, crop=True):
+    # first try on the whole image
+    # if not crop:
+    #     result = detect_objects(image)
+    #     return remove_classes(result)
+    shape = image.shape
+    
+    # cropping the image based on the shape
+    # create a percentage of the shape for cropping
+    # crop_percentage = 0.5
+    # crop_height = int(shape[0] * crop_percentage)
+    # crop_width = int(shape[1] * crop_percentage)
+    
+    result = remove_classes(detect_objects(image, crop=False))
+    result = keep_classes(result)
+    print(result)
+    
+    if len(result) != 0:
+       print("1st try worked")
+       return add_image_shape(result, image)
+    
+    #else:
+        #print("1st try failed")
+    # crop the image and try again
+    images, coords = crop_image(image)
+    results = []
+    for i, (img, coord) in enumerate(zip(images, coords)):
+        result = detect_objects(img, crop=True, original_image=image, coords=coord)
+        print(f"2nd try {i+1}/{len(images)}")
+        if len(result) != 0:
+            results.extend(result)
+            
+    results = keep_classes(results)
+    return add_image_shape(remove_classes(results), image)s
