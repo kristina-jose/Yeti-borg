@@ -1,23 +1,26 @@
 import cv2
 import numpy as np
 
-# Load the Tiny YOLOv3 model
-net = cv2.dnn.readNet("./tiny_yolo/yolov2-tiny.weights", "./tiny_yolo/yolov2-tiny.cfg")
+# this is the focal length of the camera for pi camera v1 in pixels
+FOCAL_LENGTH = 500 # 2714.3  2571.4  # calculated 494
+
+# this is the height of the object in cm
+OBJECT_HEIGHT = 8
+
+# distance from camera to object in cm for calibration purposes
+DISTANCE = 100
+
+model_loaded = False
+
+# net = cv2.dnn.readNet("./tiny_yolo/yolov4-tiny.weights", "./tiny_yolo/yolov4-tiny.cfg")
+# net = cv2.dnn.readNet("./tiny_yolo/yolov4-p6.weights", "./tiny_yolo/yolov4-p6.cfg")
+net = cv2.dnn.readNet("./tiny_yolo/yolov3-spp.weights", "./tiny_yolo/yolov3-spp.cfg")
 
 # Load the classes file
 with open("./tiny_yolo/coco.names", "r") as f:
     classes = [line.strip() for line in f.readlines()]
 
-# this is the focal length of the camera for pi camera v1 in pixels
-FOCAL_LENGTH = 500 # 2714.3  2571.4  # calculated 500
-
-# this is the height of the object in cm
-OBJECT_HEIGHT = 7
-
-# distance from camera to object in cm
-DISTANCE = 30
-
-def detect_objects(image, result_image=False, calibrate=False):
+def detect_objects(image, result_image=False, calibrate=False, crop=False, original_image=None, coords=None):
     """Detect objects in an image using the Tiny YOLOv3 model.	
         Args:
             image: The image to detect objects in. This is a numpy array.
@@ -41,7 +44,7 @@ def detect_objects(image, result_image=False, calibrate=False):
 
     # Get the output layer names
     layer_names = net.getLayerNames()
-    output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+    output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
 
     # Forward pass the image through the network
     outputs = net.forward(output_layers)
@@ -101,13 +104,13 @@ def detect_objects(image, result_image=False, calibrate=False):
             confidence = confidences[i]
             
             # Calculate the distance to the object
-            distance = (OBJECT_HEIGHT * FOCAL_LENGTH) / h
+            distance = ((OBJECT_HEIGHT * FOCAL_LENGTH) / h) + 10
             
             if calibrate:
                 focal_length = (h * DISTANCE) / OBJECT_HEIGHT
-                detected_objects.append({"label": label, "box": boxes[i], "distance": distance, "focal_length": focal_length})
+                detected_objects.append({"label": label, "box": (x, y, w, h), "distance": distance, "focal_length": focal_length})
             else:
-                detected_objects.append({"label": label, "box": boxes[i], "distance": distance})
+                detected_objects.append({"label": label, "box": (x, y, w, h), "distance": distance})
             
             if result_image:
                 color = (255, 0, 0)
@@ -199,4 +202,4 @@ def main(image, crop=True):
             results.extend(result)
             
     results = keep_classes(results)
-    return add_image_shape(remove_classes(results), image)s
+    return add_image_shape(remove_classes(results), image)
