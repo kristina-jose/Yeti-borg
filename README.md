@@ -25,6 +25,8 @@ Install dependencies
 pip install -r requirements.txt
 ```
 
+Download the yolo weights from https://pjreddie.com/media/files/yolov3.weights and place them in the tiny_yolo folder
+
 Run the server
 ```bash
 python yolo_server.py
