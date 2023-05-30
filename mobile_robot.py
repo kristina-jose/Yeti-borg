@@ -159,7 +159,7 @@ def get_object(mock=False):
     frame = cv2.rotate(frame, cv2.ROTATE_180)
     cv2.imwrite("camera_test.jpg", frame)
     # result = detect_objects(frame, result_image=True, calibrate=True)
-    result = yolo_client.main(image=frame)
+    result = yolo_client.main(image=frame, final_project=False)
     return result
 
 def move_around():

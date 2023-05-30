@@ -33,7 +33,10 @@ def recognize():
     # read the image in base64 format
     image = flask.request.files["image"].read()
     image = cv2.imdecode(np.frombuffer(image, np.uint8), cv2.IMREAD_COLOR)
-    result = yolo.main(image, crop=True)
+    
+    final_project = flask.request.form.get("final_project")
+        
+    result = yolo.main(image, crop=True, final_project=final_project)
     
     # save the image
     import os

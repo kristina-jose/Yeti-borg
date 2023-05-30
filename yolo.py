@@ -166,24 +166,17 @@ def add_image_shape(results, image):
     for result in results:
         result.update({"shape" : image.shape})
         
-    # results = [result.update({"shape" : image.shape}) for result in results]
     return results
 
-def main(image, crop=True):
+def main(image, crop=True, final_project=False):
     # first try on the whole image
-    # if not crop:
-    #     result = detect_objects(image)
-    #     return remove_classes(result)
+
     shape = image.shape
     
-    # cropping the image based on the shape
-    # create a percentage of the shape for cropping
-    # crop_percentage = 0.5
-    # crop_height = int(shape[0] * crop_percentage)
-    # crop_width = int(shape[1] * crop_percentage)
-    
     result = remove_classes(detect_objects(image, crop=False))
-    result = keep_classes(result)
+    
+    if final_project:
+        result = keep_classes(result)
     print(result)
     
     if len(result) != 0:
@@ -200,6 +193,7 @@ def main(image, crop=True):
         print(f"2nd try {i+1}/{len(images)}")
         if len(result) != 0:
             results.extend(result)
-            
-    results = keep_classes(results)
+    
+    if final_project:
+        results = keep_classes(results)
     return add_image_shape(remove_classes(results), image)

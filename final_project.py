@@ -166,7 +166,7 @@ def get_object(mock=False):
     cv2.imwrite("camera_test.jpg", frame)
     # result = detect_objects(frame, result_image=True, calibrate=True)
     print("started")
-    result = yolo_client.main(image=frame)
+    result = yolo_client.main(image=frame, final_project=True)
     print("ended")   
     return result
 
