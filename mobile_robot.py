@@ -200,7 +200,7 @@ def correct_angle():
     if len(box):
         x, y, width, height = box[0], box[1], box[2], box[3]
     else:
-        challange3()
+        challenge3()
         return
     frame_width = 640
     middle = x + (width / 2)
@@ -215,14 +215,14 @@ def correct_angle():
 
 def calibrating():
     global timeSpin360
-    test_length = float(input("Enter angle it calibrate in meters "))
+    test_length = float(input("Enter the angle the robot should make? "))
     PerformSpin(test_length)
     
-    move_length = float(input("Enter angle robit moved in meters "))
+    move_length = float(input("Enter the angle the robot did make? "))
     if test_length != move_length:
         timeSpin360 = (test_length/move_length)*timeSpin360
 
-def challange1():
+def challenge1():
     distance = []
     target = 0
     object1 = get_object(mock=False) #object1 will give a dictionary with the distance
@@ -233,7 +233,7 @@ def challange1():
     target = (target / 100) - 0.05 
     PerformDrive(target)    
 
-def challange2():
+def challenge2():
     distance = []
     target = 0
     object1 = get_object(mock=False) #object1 will give a dictionary with the distance
@@ -247,7 +247,7 @@ def challange2():
     target2 = 2 - target - 0.4
     PerformDrive(target2)
     
-def challange3():
+def challenge3():
     target, box = looking_for_object()       
     if target > 2.5:
         PerformSpin(45)
@@ -258,7 +258,7 @@ def challange3():
             if target > 2.5:
                 PerformSpin(-90)
                 PerformDrive(0.20) 
-                challange3()
+                challenge3()
             else:
                 correct_angle()  
         else:
@@ -278,16 +278,16 @@ if __name__ == '__main__':
             "calibrating"
             calibrating()
         elif option == 1:
-            "Challange 1"
-            challange1()
+            "Challenge 1"
+            challenge1()
 
         elif option == 2:
-            "Challange 2"
-            challange2()
+            "Challenge 2"
+            challenge2()
 
         elif option == 3:
-            "Challange 3"               
-            challange3()
+            "Challenge 3"               
+            challenge3()
 
         else:
             done = True
