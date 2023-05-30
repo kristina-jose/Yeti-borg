@@ -9,6 +9,8 @@
 
 ## setup yolo server on separate machine
 
+python version 3.9.1 or higher is required for all the dependencies to work
+
 Optional: seup virtual environment
 ```bash
 python -m venv venv

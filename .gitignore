@@ -2,3 +2,4 @@ __pycache__
 venv
 *server/*jpg
 *runs/*
+*yolov3-spp.weights
