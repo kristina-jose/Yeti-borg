@@ -104,7 +104,7 @@ def detect_objects(image, result_image=False, calibrate=False, crop=False, origi
             confidence = confidences[i]
             
             # Calculate the distance to the object
-            distance = ((OBJECT_HEIGHT * FOCAL_LENGTH) / h) + 10
+            distance = ((OBJECT_HEIGHT * FOCAL_LENGTH) / h)
             
             if calibrate:
                 focal_length = (h * DISTANCE) / OBJECT_HEIGHT
