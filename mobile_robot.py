@@ -162,6 +162,8 @@ def get_object(mock=False):
     result = yolo_client.main(image=frame, final_project=False)
     return result
 
+# Rotate right, move, rotate left, move, rotate left, move, rotate right
+# This will most likely allow the robot to move around a small object
 def move_around():
     PerformSpin(90)
     time.sleep(1)
@@ -178,6 +180,7 @@ def move_around():
     PerformSpin(90)
     time.sleep(1)
 
+# Take a picture with the camera and interpret the picture with yolo
 def looking_for_object():
     distance = []
     box = []
@@ -194,6 +197,8 @@ def looking_for_object():
     short_dis = (short_dis / 100)
     return short_dis, box
 
+# Start looking for the object
+# Keep rotating left and right until the bounding box if roughly in the middle
 def correct_angle():
     target, box = looking_for_object()
     target += 0.10
@@ -213,6 +218,10 @@ def correct_angle():
         PerformSpin(10)
         correct_angle() 
 
+# Ask of the desired angle the robot should take
+# Execute the rotation and compare it to the actual rotation
+# Set timeSpin360 to the more accurate value using this difference
+# Different level of the battery change the timeSpin360, so this should be set before executing the other parts
 def calibrating():
     global timeSpin360
     test_length = float(input("Enter the angle the robot should make? "))
@@ -222,24 +231,31 @@ def calibrating():
     if test_length != move_length:
         timeSpin360 = (test_length/move_length)*timeSpin360
 
+# Find an object in from of the robot
+# Print out the object, this includes the distance to the object
+# Finally move this distance, thus moving as close to the object as possible
 def challenge1():
     distance = []
     target = 0
     object1 = get_object(mock=False) #object1 will give a dictionary with the distance
     print(object1)
+
+    # Go through every object found and take the closed object, which should be the object we are looking for
     for objects in object1:
-        distance.append(objects.get("distance"))         
+        distance.append(objects.get("distance"))
         target = min(distance)
     target = (target / 100) - 0.05 
     PerformDrive(target)    
 
+# Again find the object in front of us
+# This time move up to it, move around it and finish moving forwards
 def challenge2():
     distance = []
     target = 0
     object1 = get_object(mock=False) #object1 will give a dictionary with the distance
     print(object1)
     for objects in object1:
-        distance.append(objects.get("distance"))         
+        distance.append(objects.get("distance")) 
         target = min(distance)
     target = (target / 100) - 0.10 
     PerformDrive(target)
@@ -247,8 +263,13 @@ def challenge2():
     target2 = 2 - target - 0.4
     PerformDrive(target2)
     
+# Search for the object
+# Rotate 45 degrees to the right twice and back
+# Take pictures and interpret them at every point
+# When the object is found try to rotate towards it and move to it
 def challenge3():
-    target, box = looking_for_object()       
+    target, box = looking_for_object()
+    # If the distance to the object is too large, keep looking
     if target > 2.5:
         PerformSpin(45)
         target, box = looking_for_object()
@@ -275,18 +296,18 @@ if __name__ == '__main__':
     while not done:
         option = int(input("Press a number "))
         if option == 0:
-            "calibrating"
+            # Calibrating, necessary as different battery levels change motor performence
             calibrating()
         elif option == 1:
-            "Challenge 1"
+            # Challenge 1
             challenge1()
 
         elif option == 2:
-            "Challenge 2"
+            # Challenge 2
             challenge2()
 
         elif option == 3:
-            "Challenge 3"               
+            # Challenge 3               
             challenge3()
 
         else:

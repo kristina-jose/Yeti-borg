@@ -170,27 +170,16 @@ def get_object(mock=False):
     print("ended")   
     return result
 
-def move_around():
-    PerformSpin(90)
-    time.sleep(1)
-    PerformDrive(0.20)
-    time.sleep(1)
-    PerformSpin(-80)
-    time.sleep(1)
-    PerformDrive(0.50)
-    time.sleep(1)
-    PerformSpin(-80)
-    time.sleep(1)
-    PerformDrive(0.12)
-    time.sleep(1)
-    PerformSpin(90)
-    time.sleep(1)
-
+# Take a picture with the camera and interpret the picture with yolo
 def looking_for_object():
     object1 = get_object(mock=False) #object1 will give a dictionary with the distance
     print(object1)
     return object1
 
+# Find the object in front of us
+# Check if the color matches what we are looking for
+# If we somehow lost the object we look for it in trying_to_find_last_cup
+# Only return if we found the cup with the correct color
 def find_cup(color):
     while True:
         target = 0
@@ -207,6 +196,10 @@ def find_cup(color):
         else:
             trying_to_find_last_cup(color)
 
+# The object is lost, so start rotating until it is found again
+# Rotate in increments by 25, so 0 --- 25 --- -25 --- 50 --- -50...
+# This is achieved by increasing the rotation by 25 every time,
+# canceling our current rotation and moving to the correct rotation
 def trying_to_find_last_cup(color):
     x = 0
     for i in range(1, 100):
@@ -222,6 +215,10 @@ def trying_to_find_last_cup(color):
         else:
             x = 25*i
 
+# Look for the object of the correct color, if we find it we continue
+# Find the distance of the center of the object to the center of the picture
+# If the object is to the left, we rotate to the left, move and rotate back and vise verse
+# When we are centered we drive towards the object
 def correct_angle(target, x, width, color):
     while True:
         if target < 0.5:
@@ -247,6 +244,10 @@ def correct_angle(target, x, width, color):
                 PerformSpin(-90)
             target, x, width = find_cup(color)
     
+# Find the colored cups blue, green and red (in that order)
+# If we do not find is, we start looking for it, otherwise move ourselves in front of the object
+# When we are front of the object we move it some distance away
+# Finally we turn around to look for the next color
 def final_project():
     colors = ["BLUE", "GREEN", "RED"]
     for color in colors:
@@ -256,6 +257,12 @@ def final_project():
         time.sleep(1)
         PerformSpin(180)
 
+# Ask of the desired angles the robot should take
+# Execute the rotation and compare it to the actual rotation
+# Set timeSpin360 to the more accurate value using this difference
+# Different level of the battery change the timeSpin360, so this should be set before executing the other parts
+# Note that two calibrations are executed, the left and right rotation are slightly different
+# Therefore two different values are used to execute them, so we calibrate them better
 def calibrating():
     global timeSpin360_left
     global timeSpin360_right
@@ -275,7 +282,10 @@ def calibrating():
         timeSpin360_right = (test_length/move_length)*timeSpin360_right
         print(timeSpin360_right)
 
-
+# Ask of the desired distance the robot should take
+# Execute the move and compare it to the actual distance
+# Set timeForward1m to the more accurate value using this difference
+# Different level of the battery change the timeForward1m, so this should be set before executing the other parts
 def calibrating_meters():
     global timeForward1m
     test_length = float(input("Enter the distance you want to move "))
@@ -293,13 +303,13 @@ if __name__ == '__main__':
     while not done:
         option = int(input("Press a number "))
         if option == 0:
-            "calibrating"
+            # Calibrating the rotation
             calibrating()            
         elif option == 1:
-            "movement"               
+            # Calibrating the distance movement
             calibrating_meters()
         elif option == 2:
-            "Challange final project"
+            # Execute the final project challange
             final_project()
         else:
             done = True
