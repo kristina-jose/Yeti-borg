@@ -59,11 +59,11 @@ python yolo_client.py
 ```
 
 # Run Mobile Robot challenge:
-Run the command in order to start the project:
+Run the following command in order to start the project:
 ```bash
 python mobile_robot.py
 ```
-There will asked to give an option as input:
+There will asked to press a number as input:
 - Press "0" to start calibrating
 - Press "1" to start challenge 1
 - Press "2" to start challenge 2
@@ -74,3 +74,13 @@ The calibrating part consists out of 2 questions:
 Enter the angle the robot should make?
 Enter the angle the robot did make?
 The difference between these answers will lead to an automatically change in the spin, so when you try to calibrate it again, you should be close to the first number you entered. 
+
+# Running Final project:
+Run the following command in order to start the project:
+```bash
+python final_project.py
+```
+There will asked to press a number as input:
+- Press "0" to start calibrating angle
+- Press "1" to start calibrating meters
+- Press "2" to start final project
