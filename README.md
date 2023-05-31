@@ -84,3 +84,5 @@ There will asked to press a number as input:
 - Press "0" to start calibrating angle
 - Press "1" to start calibrating meters
 - Press "2" to start final project
+
+It is a almost the same as with the Mobile Robot challenge, but calibrating angle consist out of a right angle and left angle, because we observed that this is not the same. Furthermore, we added calibrating meters, because the distance the robt drives can also change depending on the batteries. 
